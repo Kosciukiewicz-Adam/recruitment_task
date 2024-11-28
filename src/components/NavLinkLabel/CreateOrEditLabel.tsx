@@ -46,7 +46,7 @@ const CreateOrEditLabel: React.FC<Props> = ({
             </div>
 
             <div className="w-[100%] flex flex-row mt-[12px] gap-[8px] text-[14px]">
-                <Button text="" handleClick={() => handleDelete(id)} roundBorder={true} />
+                <Button text="Anuluj" handleClick={() => handleDelete(id)} roundBorder={true} />
                 <input
                     className="rounded-[--radius-md] border-[1px] text-[#6941C6] w-[75px] h-[40px] grid place-content-center"
                     type="submit"

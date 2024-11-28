@@ -11,11 +11,11 @@ const Button: React.FC<Props> = ({ handleClick, text, roundBorder, additionalSty
     styles += additionalStyles || "";
 
     if (roundBorder) {
-        styles += "border-[1px] rounded-bl-[--radius-md]"
+        styles += "border-[1px] rounded-[--radius-md]"
     }
 
     return (
-        <div onClick={() => handleClick} className={styles}>
+        <div onClick={() => handleClick()} className={styles}>
             {text}
         </div>
     )
