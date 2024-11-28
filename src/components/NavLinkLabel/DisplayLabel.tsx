@@ -1,6 +1,7 @@
 import { navLink } from "@/app/page";
 import Image from "next/image";
 import { LabelActions } from ".";
+import Button from "../Button";
 
 type Props = Omit<navLink, 'state'> & LabelActions
 
@@ -13,20 +14,10 @@ const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdi
                     <div className="text-[#101828] font-semibold">{label}</div>
                     <div className="text-[#475467]">{url}</div>
                 </div>
-                <div className="flex flex-row rounded-[--radius-md] border-[#D0D5DD] border-[1px]">
-                    <div
-                        onClick={() => handleDelete(id)}
-                        className="grid place-content-center py-[10px] px-[16px] cursor-pointer hover:text-[#6941C6]"
-                    >usuń</div>
-                    <div
-                        onClick={() => handleEdit?.(id)}
-                        className="grid place-content-center py-[10px] px-[16px] border-[#D0D5DD]
-                        border-l-[1px] border-r-[1px] cursor-pointer hover:text-[#6941C6]"
-                    >edytuj</div>
-                    <div
-                        className="grid place-content-center py-[10px] px-[16px] whitespace-nowrap
-                        cursor-pointer hover:text-[#6941C6]"
-                    >dodaj pozycje menu</div>
+                <div className="flex flex-row rounded-[--radius-md] border-[#D0D5DD] border-[1px] overflow-hidden">
+                    <Button text="usuń" handleClick={() => handleDelete(id)} />
+                    <Button text="edytuj" handleClick={() => handleEdit?.(id)} additionalStyles="border-x-[1px]" />
+                    <Button text="dodaj pozycje menu" handleClick={() => { }} />
                 </div>
             </div>
         </div>
