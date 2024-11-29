@@ -10,13 +10,19 @@ export type Inputs = {
 }
 
 export type LabelActions = {
-    updateLinkData?: (data: navLink) => void;
+    handleUpdate?: (data: navLink) => void;
     handleDelete: (id: string) => void;
     handleEdit?: (id: string) => void;
+    handleAdd?: () => void;
 }
 
-const NavLinkLabel: React.FC<navLink & LabelActions> = ({
-    state, url, label, id, handleDelete, updateLinkData, handleEdit,
+type Props = navLink & LabelActions & {
+    isFirstLink: boolean;
+    isLastLink: boolean;
+}
+
+const NavLinkLabel: React.FC<Props> = ({
+    state, url, label, id, handleDelete, handleUpdate, handleEdit, isFirstLink, isLastLink, handleAdd,
 }): JSX.Element => {
     const {
         formState: { errors },
@@ -25,13 +31,24 @@ const NavLinkLabel: React.FC<navLink & LabelActions> = ({
     } = useForm<Inputs>();
 
     const onSubmit: SubmitHandler<Inputs> = (data) => {
-        updateLinkData?.({ url: data.url, label: data.label, id, state: LabelState.DISPLAY })
+        handleUpdate?.({ url: data.url, label: data.label, id, state: LabelState.DISPLAY })
+    }
+
+    let borderStyles = "border-b-[0px]";
+
+    if (isFirstLink) {
+        borderStyles += " rounded-tl-[--radius-md] rounded-tr-[--radius-md]"
+    }
+
+    if (isFirstLink && isLastLink && state === LabelState.CREATE_OR_EDIT) {
+        borderStyles = " rounded-[--radius-md] overflow-hidden"
     }
 
     return (
-        <div className="w-[100%] border-[#D0D5DD] border-[1px] bg-white rounded-[--radius-md]">
+        <div className={`w-[100%] border-[#D0D5DD] border-[1px] bg-white ${borderStyles}`}>
             {state == "createOrEdit" ? (
                 <CreateOrEditLabel
+                    isOnlyLink={isFirstLink && isLastLink}
                     handleSubmit={handleSubmit}
                     handleDelete={handleDelete}
                     isError={!!errors.label}
@@ -42,7 +59,14 @@ const NavLinkLabel: React.FC<navLink & LabelActions> = ({
                     id={id}
                 />
             ) : (
-                <DisplayLabel url={url} label={label} id={id} handleDelete={handleDelete} handleEdit={handleEdit} />
+                <DisplayLabel
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
+                    handleAdd={handleAdd}
+                    label={label}
+                    url={url}
+                    id={id}
+                />
             )}
         </div>
     )

@@ -5,7 +5,7 @@ import Button from "../Button";
 
 type Props = Omit<navLink, 'state'> & LabelActions
 
-const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdit }): JSX.Element => {
+const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdit, handleAdd }): JSX.Element => {
     return (
         <div className="flex flex-col">
             <div className="flex flex-row py-[16px] px-[24px] h-[78px] text-[14px] gap-[4px] justify-between overflow-hidden">
@@ -14,10 +14,10 @@ const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdi
                     <div className="text-[#101828] font-semibold">{label}</div>
                     <div className="text-[#475467]">{url}</div>
                 </div>
-                <div className="flex flex-row rounded-[--radius-md] border-[#D0D5DD] border-[1px] overflow-hidden">
+                <div className="flex flex-row rounded-[--radius-md] border-[#D0D5DD] border-[1px] overflow-hidden h-[40px]">
                     <Button text="usuń" handleClick={() => handleDelete(id)} />
                     <Button text="edytuj" handleClick={() => handleEdit?.(id)} additionalStyles="border-x-[1px]" />
-                    <Button text="dodaj pozycje menu" handleClick={() => { }} />
+                    <Button text="dodaj pozycje menu" handleClick={() => handleAdd?.()} />
                 </div>
             </div>
         </div>

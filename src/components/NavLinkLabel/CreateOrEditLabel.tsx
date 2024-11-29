@@ -7,12 +7,14 @@ type Props = Omit<navLink, 'state'> & {
     handleSubmit: UseFormHandleSubmit<Inputs, undefined>;
     register: UseFormRegister<Inputs>;
     onSubmit: SubmitHandler<Inputs>;
+    isOnlyLink: boolean;
     isError: boolean;
-} & LabelActions
+} & LabelActions;
 
 const CreateOrEditLabel: React.FC<Props> = ({
     handleDelete,
     handleSubmit,
+    isOnlyLink,
     onSubmit,
     register,
     isError,
@@ -20,9 +22,16 @@ const CreateOrEditLabel: React.FC<Props> = ({
     url,
     id,
 }): JSX.Element => {
-    return (
+    let additionalStyles = "";
+
+    if (!isOnlyLink) {
+        additionalStyles = "rounded-[--radius-md] border-[1px] border-[#D0D5DD]"
+    }
+
+
+    const getForm = (): JSX.Element => (
         <form
-            className="w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px] "
+            className={`w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px] bg-white ${additionalStyles}`}
             onSubmit={handleSubmit(onSubmit)}
         >
             <div className="w-[100%] flex flex-col gap-[6px]">
@@ -55,6 +64,19 @@ const CreateOrEditLabel: React.FC<Props> = ({
             </div>
         </form>
     )
+
+
+
+    if (isOnlyLink) {
+        return getForm();
+    }
+
+    return (
+        <div className="w-[100%] bg-[#F9FAFB] px-[64px] py-[64px]">
+            {getForm()}
+        </div>
+    )
+
 }
 
 export default CreateOrEditLabel

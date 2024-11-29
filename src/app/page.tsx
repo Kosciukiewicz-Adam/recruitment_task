@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import EmptyListLabel from "@/components/EmptyListPlaceholder";
 import NavLinkLabel from "@/components/NavLinkLabel";
 import _ from 'lodash'
+import AddLinkBar from "@/components/AddLinkBar";
 
 export enum LabelState {
   CREATE_OR_EDIT = "createOrEdit",
@@ -15,7 +16,6 @@ export interface navLink {
   url: string;
   id: string;
 }
-
 
 export default function Home() {
   const [navLinks, setNavLinks] = useState<navLink[]>([
@@ -43,8 +43,8 @@ export default function Home() {
     setNavLinks(newNavLinks)
   }
 
-  const handleEdit = (id: string) => {
-    updateLinkData({
+  const handleEditNavLink = (id: string) => {
+    handleUpdateNavLinks({
       id,
       state: LabelState.CREATE_OR_EDIT
     })
@@ -52,7 +52,7 @@ export default function Home() {
 
   const getExistingOrPrevValue = (prevValue: string, nextValue?: string): string => !!nextValue && prevValue !== nextValue ? nextValue : prevValue
 
-  const updateLinkData = (data: Partial<navLink>) => {
+  const handleUpdateNavLinks = (data: Partial<navLink>) => {
     const linkInArray = navLinks.find(link => link.id === data?.id);
 
     if (linkInArray) {
@@ -67,20 +67,27 @@ export default function Home() {
     }
   }
 
+  const showAddLinkBar = navLinks.length > 1 || navLinks.length === 1 && navLinks[0].state === LabelState.DISPLAY;
+
   return (
     <div className="font-[family-name:var(--font-inter)] w-[100%] h-[100%] bg-[#f5f4f4] py-[30px] px-[24px]">
       {navLinks.length ? (
         <>{
-          navLinks.map(link => (
+          navLinks.map((link, index) => (
             <NavLinkLabel
+              isLastLink={index === navLinks.length - 1}
+              handleUpdate={handleUpdateNavLinks}
               handleDelete={handleDeleteNavLink}
-              updateLinkData={updateLinkData}
-              handleEdit={handleEdit}
-              key={link.label}
+              handleEdit={handleEditNavLink}
+              handleAdd={handleAddNavLink}
+              isFirstLink={index === 0}
+              key={link.id}
               {...link}
             />
           ))
-        }</>
+        }
+          {showAddLinkBar && <AddLinkBar handleAdd={handleAddNavLink} />}
+        </>
       ) : (
         <EmptyListLabel
           subtitle="W tym menu nie ma jeszcze żadnych linków"
