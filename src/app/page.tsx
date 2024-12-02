@@ -2,8 +2,10 @@
 import React, { useState } from "react";
 import EmptyListLabel from "@/components/EmptyListPlaceholder";
 import NavLinkLabel from "@/components/NavLinkLabel";
-import _ from 'lodash'
+import _ from 'lodash';
 import AddLinkBar from "@/components/AddLinkBar";
+import { closestCorners, DndContext, DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 export enum LabelState {
   CREATE_OR_EDIT = "createOrEdit",
@@ -26,15 +28,7 @@ export interface navLink {
 }
 
 export default function Home() {
-  const [navLinks, setNavLinks] = useState<navLink[]>([
-    {
-      chierarchyIndex: 0,
-      state: LabelState.DISPLAY,
-      id: _.uniqueId("link_"),
-      label: "Promocje",
-      url: "https://rc32141.redcart.pl/promocje",
-    },
-  ]);
+  const [navLinks, setNavLinks] = useState<navLink[]>([]);
   const getExistingOrPrevValue = (prevValue: string, nextValue?: string): string => !!nextValue && prevValue !== nextValue ? nextValue : prevValue;
   const showAddLinkBar = navLinks.length > 1 || navLinks.length === 1 && navLinks[0].state === LabelState.DISPLAY;
   const navLinksWithoutParents = navLinks.filter(link => !link?.parentId);
@@ -62,7 +56,7 @@ export default function Home() {
   }
 
   const handleDeleteNavLink = (id: string) => {
-    const newNavLinks = navLinks.filter(link => link.id !== id)
+    const newNavLinks = navLinks.filter(link => link.id !== id && link.parentId !== id)
     setNavLinks(newNavLinks)
   }
 
@@ -128,24 +122,55 @@ export default function Home() {
     return bordersConfig;
   }
 
+  const getLinkPosition = (id): number => {
+    return sortedNavLinks.findIndex(link => link.id === id)
+  }
+
+  const updateChierarchyAndParent = (activeId, overId) => {
+    const replacedLinktIndex = getLinkPosition(overId);
+    const draggedLinkIndex = getLinkPosition(activeId);
+
+    if (replacedLinktIndex === -1 || draggedLinkIndex === -1) return;
+
+    if (sortedNavLinks[replacedLinktIndex]?.parentId) {
+      sortedNavLinks[draggedLinkIndex].parentId = sortedNavLinks[replacedLinktIndex].parentId
+    } else {
+      delete sortedNavLinks[draggedLinkIndex].parentId
+    }
+
+    sortedNavLinks[draggedLinkIndex].chierarchyIndex = sortedNavLinks[replacedLinktIndex].chierarchyIndex
+    setNavLinks(arrayMove(sortedNavLinks, draggedLinkIndex, replacedLinktIndex))
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id === over?.id) return;
+    updateChierarchyAndParent(active.id, over?.id)
+  }
+
   return (
     <div className="font-[family-name:var(--font-inter)] w-[100%] h-[100%] bg-[#f5f4f4] py-[30px] px-[24px]">
       {sortedNavLinks.length ? (
-        <>{
-          sortedNavLinks.map((link, index) => (
-            <NavLinkLabel
-              isOnlyLabel={sortedNavLinks.length === 1}
-              index={index}
-              bordersConfig={getBordersConfig(index)}
-              handleUpdate={handleUpdateNavLinks}
-              handleDelete={handleDeleteNavLink}
-              handleEdit={handleEditNavLink}
-              handleAdd={handleAddNavLink}
-              key={link.id}
-              {...link}
-            />
-          ))
-        }
+        <>
+          <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+            <SortableContext items={sortedNavLinks} strategy={verticalListSortingStrategy}>
+              {
+                sortedNavLinks.map((link, index) => (
+                  <NavLinkLabel
+                    isOnlyLabel={sortedNavLinks.length === 1}
+                    index={index}
+                    bordersConfig={getBordersConfig(index)}
+                    handleUpdate={handleUpdateNavLinks}
+                    handleDelete={handleDeleteNavLink}
+                    handleEdit={handleEditNavLink}
+                    handleAdd={handleAddNavLink}
+                    key={link.id}
+                    {...link}
+                  />
+                ))
+              }
+            </SortableContext>
+          </DndContext>
           {showAddLinkBar && <AddLinkBar handleAdd={handleAddNavLink} top={`-${sortedNavLinks.length}px`} />}
         </>
       ) : (

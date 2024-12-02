@@ -15,7 +15,7 @@ const Button: React.FC<Props> = ({ handleClick, text, roundBorder, additionalSty
     }
 
     return (
-        <div onClick={() => handleClick()} className={styles}>
+        <div onMouseDown={handleClick} className={styles}>
             {text}
         </div>
     )

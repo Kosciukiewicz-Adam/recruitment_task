@@ -1,7 +1,11 @@
+'use client'
+
 import { BordersConfig, navLink } from "@/app/page";
 import Image from "next/image";
 import { LabelActions } from ".";
 import Button from "../Button";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities"
 
 type Props = Omit<navLink, 'state'> & LabelActions & {
     bordersConfig: BordersConfig;
@@ -10,7 +14,14 @@ type Props = Omit<navLink, 'state'> & LabelActions & {
 const DisplayLabel: React.FC<Props> = ({
     label, url, id, handleDelete, handleEdit, handleAdd, chierarchyIndex, bordersConfig,
 }): JSX.Element => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+
     let additionalStyles = "";
+    const style = {
+        marginLeft: `${chierarchyIndex * 64}px`,
+        transform: CSS.Transform.toString(transform) || "unset",
+        transition: transition || "unset",
+    }
 
     if (bordersConfig.topLeft) {
         additionalStyles += " rounded-tl-[--radius-md]"
@@ -29,7 +40,11 @@ const DisplayLabel: React.FC<Props> = ({
             className={
                 `flex flex-col bg-white border-[#D0D5DD] border-[1px] ${additionalStyles}`
             }
-            style={{ marginLeft: `${chierarchyIndex * 64}px` }}
+            style={style}
+            ref={setNodeRef}
+            suppressHydrationWarning
+            {...attributes}
+            {...listeners}
         >
             <div className="flex flex-row py-[16px] px-[24px] h-[78px] text-[14px] gap-[4px] justify-between overflow-hidden">
                 <Image src="/move.svg" alt="move-icon" width={40} height={40} className="p-[10px]" />
