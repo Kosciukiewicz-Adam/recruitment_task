@@ -1,22 +1,10 @@
-import { BordersConfig, navLink } from "@/app/page";
 import { useForm, SubmitHandler } from "react-hook-form"
 import CreateOrEditLabel from "./CreateOrEditLabel";
+import { BordersConfig, NavLink, LabelActions, Inputs } from "@/types";
 import DisplayLabel from "./DisplayLabel";
-import { LabelState } from "@/app/page";
+import { LabelState } from "@/consts";
 
-export type Inputs = {
-    label: string;
-    url: string;
-}
-
-export type LabelActions = {
-    handleUpdate?: (data: Partial<navLink>) => void;
-    handleAdd?: (parentId?: string) => void;
-    handleDelete: (id: string) => void;
-    handleEdit?: (id: string) => void;
-}
-
-type Props = navLink & LabelActions & {
+type Props = NavLink & LabelActions & {
     bordersConfig: BordersConfig;
     isOnlyLabel: boolean;
     index: number;

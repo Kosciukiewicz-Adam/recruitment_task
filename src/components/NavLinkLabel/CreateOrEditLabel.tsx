@@ -1,9 +1,8 @@
-import { navLink } from "@/app/page"
-import { LabelActions, type Inputs } from "./index"
+import { LabelActions, Inputs, NavLink } from "@/types"
 import { UseFormRegister, SubmitHandler, UseFormHandleSubmit } from "react-hook-form"
 import Button from "../Button";
 
-type Props = Omit<navLink, 'state' | 'chierarchyIndex'> & {
+type Props = Omit<NavLink, 'state' | 'chierarchyIndex'> & {
     handleSubmit: UseFormHandleSubmit<Inputs, undefined>;
     register: UseFormRegister<Inputs>;
     onSubmit: SubmitHandler<Inputs>;

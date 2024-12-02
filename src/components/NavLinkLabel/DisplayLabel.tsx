@@ -1,13 +1,12 @@
 'use client'
 
-import { BordersConfig, navLink } from "@/app/page";
+import { BordersConfig, NavLink, LabelActions } from "@/types";
 import Image from "next/image";
-import { LabelActions } from ".";
 import Button from "../Button";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities"
 
-type Props = Omit<navLink, 'state'> & LabelActions & {
+type Props = Omit<NavLink, 'state'> & LabelActions & {
     bordersConfig: BordersConfig;
 }
 
