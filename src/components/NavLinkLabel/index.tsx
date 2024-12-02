@@ -1,28 +1,40 @@
-import { navLink } from "@/app/page";
+import { BordersConfig, navLink } from "@/app/page";
 import { useForm, SubmitHandler } from "react-hook-form"
 import CreateOrEditLabel from "./CreateOrEditLabel";
 import DisplayLabel from "./DisplayLabel";
 import { LabelState } from "@/app/page";
 
 export type Inputs = {
-    label: string
-    url: string
+    label: string;
+    url: string;
 }
 
 export type LabelActions = {
-    handleUpdate?: (data: navLink) => void;
+    handleUpdate?: (data: Partial<navLink>) => void;
+    handleAdd?: (parentId?: string) => void;
     handleDelete: (id: string) => void;
     handleEdit?: (id: string) => void;
-    handleAdd?: () => void;
 }
 
 type Props = navLink & LabelActions & {
-    isFirstLink: boolean;
-    isLastLink: boolean;
+    bordersConfig: BordersConfig;
+    isOnlyLabel: boolean;
+    index: number;
 }
 
 const NavLinkLabel: React.FC<Props> = ({
-    state, url, label, id, handleDelete, handleUpdate, handleEdit, isFirstLink, isLastLink, handleAdd,
+    chierarchyIndex,
+    bordersConfig,
+    handleDelete,
+    handleUpdate,
+    index,
+    isOnlyLabel,
+    handleEdit,
+    handleAdd,
+    state,
+    label,
+    url,
+    id,
 }): JSX.Element => {
     const {
         formState: { errors },
@@ -34,24 +46,23 @@ const NavLinkLabel: React.FC<Props> = ({
         handleUpdate?.({ url: data.url, label: data.label, id, state: LabelState.DISPLAY })
     }
 
-    let borderStyles = "border-b-[0px]";
+    let additionalStyles = "";
 
-    if (isFirstLink) {
-        borderStyles += " rounded-tl-[--radius-md] rounded-tr-[--radius-md]"
-    }
-
-    if (isFirstLink && isLastLink && state === LabelState.CREATE_OR_EDIT) {
-        borderStyles = " rounded-[--radius-md] overflow-hidden"
+    if (chierarchyIndex > 0 && state !== LabelState.CREATE_OR_EDIT) {
+        additionalStyles += "border-l-[1px] border-[#D0D5DD] "
     }
 
     return (
-        <div className={`w-[100%] border-[#D0D5DD] border-[1px] bg-white ${borderStyles}`}>
+        <div
+            className={`w-[100%] flex flex-col relative ${additionalStyles}`}
+            style={{ top: `-${index * 1}px` }}
+        >
             {state == "createOrEdit" ? (
                 <CreateOrEditLabel
-                    isOnlyLink={isFirstLink && isLastLink}
                     handleSubmit={handleSubmit}
                     handleDelete={handleDelete}
                     isError={!!errors.label}
+                    isOnlyLabel={isOnlyLabel}
                     onSubmit={onSubmit}
                     register={register}
                     label={label}
@@ -60,6 +71,8 @@ const NavLinkLabel: React.FC<Props> = ({
                 />
             ) : (
                 <DisplayLabel
+                    bordersConfig={bordersConfig}
+                    chierarchyIndex={chierarchyIndex}
                     handleDelete={handleDelete}
                     handleEdit={handleEdit}
                     handleAdd={handleAdd}

@@ -1,13 +1,36 @@
-import { navLink } from "@/app/page";
+import { BordersConfig, navLink } from "@/app/page";
 import Image from "next/image";
 import { LabelActions } from ".";
 import Button from "../Button";
 
-type Props = Omit<navLink, 'state'> & LabelActions
+type Props = Omit<navLink, 'state'> & LabelActions & {
+    bordersConfig: BordersConfig;
+}
 
-const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdit, handleAdd }): JSX.Element => {
+const DisplayLabel: React.FC<Props> = ({
+    label, url, id, handleDelete, handleEdit, handleAdd, chierarchyIndex, bordersConfig,
+}): JSX.Element => {
+    let additionalStyles = "";
+
+    if (bordersConfig.topLeft) {
+        additionalStyles += " rounded-tl-[--radius-md]"
+    }
+
+    if (bordersConfig.topRight) {
+        additionalStyles += " rounded-tr-[--radius-md]"
+    }
+
+    if (bordersConfig.bottomLeft) {
+        additionalStyles += " rounded-bl-[--radius-md]"
+    }
+
     return (
-        <div className="flex flex-col">
+        <div
+            className={
+                `flex flex-col bg-white border-[#D0D5DD] border-[1px] ${additionalStyles}`
+            }
+            style={{ marginLeft: `${chierarchyIndex * 64}px` }}
+        >
             <div className="flex flex-row py-[16px] px-[24px] h-[78px] text-[14px] gap-[4px] justify-between overflow-hidden">
                 <Image src="/move.svg" alt="move-icon" width={40} height={40} className="p-[10px]" />
                 <div className="flex flex-col gap-[6px] grow">
@@ -17,7 +40,7 @@ const DisplayLabel: React.FC<Props> = ({ label, url, id, handleDelete, handleEdi
                 <div className="flex flex-row rounded-[--radius-md] border-[#D0D5DD] border-[1px] overflow-hidden h-[40px]">
                     <Button text="usuń" handleClick={() => handleDelete(id)} />
                     <Button text="edytuj" handleClick={() => handleEdit?.(id)} additionalStyles="border-x-[1px]" />
-                    <Button text="dodaj pozycje menu" handleClick={() => handleAdd?.()} />
+                    <Button text="dodaj pozycje menu" handleClick={() => handleAdd?.(id)} />
                 </div>
             </div>
         </div>

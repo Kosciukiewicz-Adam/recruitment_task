@@ -3,18 +3,18 @@ import { LabelActions, type Inputs } from "./index"
 import { UseFormRegister, SubmitHandler, UseFormHandleSubmit } from "react-hook-form"
 import Button from "../Button";
 
-type Props = Omit<navLink, 'state'> & {
+type Props = Omit<navLink, 'state' | 'chierarchyIndex'> & {
     handleSubmit: UseFormHandleSubmit<Inputs, undefined>;
     register: UseFormRegister<Inputs>;
     onSubmit: SubmitHandler<Inputs>;
-    isOnlyLink: boolean;
+    isOnlyLabel: boolean;
     isError: boolean;
 } & LabelActions;
 
 const CreateOrEditLabel: React.FC<Props> = ({
     handleDelete,
     handleSubmit,
-    isOnlyLink,
+    isOnlyLabel,
     onSubmit,
     register,
     isError,
@@ -24,14 +24,13 @@ const CreateOrEditLabel: React.FC<Props> = ({
 }): JSX.Element => {
     let additionalStyles = "";
 
-    if (!isOnlyLink) {
-        additionalStyles = "rounded-[--radius-md] border-[1px] border-[#D0D5DD]"
+    if (!isOnlyLabel) {
+        additionalStyles = "rounded-[--radius-md] border-[1px] border-[#D0D5DD]";
     }
-
 
     const getForm = (): JSX.Element => (
         <form
-            className={`w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px] bg-white ${additionalStyles}`}
+            className={`w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px]  bg-white ${additionalStyles}`}
             onSubmit={handleSubmit(onSubmit)}
         >
             <div className="w-[100%] flex flex-col gap-[6px]">
@@ -67,16 +66,15 @@ const CreateOrEditLabel: React.FC<Props> = ({
 
 
 
-    if (isOnlyLink) {
+    if (isOnlyLabel) {
         return getForm();
     }
 
     return (
-        <div className="w-[100%] bg-[#F9FAFB] px-[64px] py-[64px]">
+        <div className="w-[100%] bg-[#F9FAFB] px-[64px] py-[64px] border-[1px] border-[#D0D5DD] border-b-[0px]">
             {getForm()}
         </div>
     )
-
 }
 
-export default CreateOrEditLabel
+export default CreateOrEditLabel;
