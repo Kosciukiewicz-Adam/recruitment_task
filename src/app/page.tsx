@@ -85,20 +85,20 @@ export default function Home(): JSX.Element {
       delete newNavLinks[draggedLinkIndex].parentId
     }
 
+    newNavLinks[draggedLinkIndex].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex;
+
     newNavLinks.forEach((link, index) => {
       if (link.parentId === newNavLinks[draggedLinkIndex].id) {
-        newNavLinks[index].parentId = newNavLinks[replacedLinktIndex].parentId;
-        newNavLinks[index].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex;
+        newNavLinks[index].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex + 1;
       }
     })
 
-    newNavLinks[draggedLinkIndex].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex;
     setNavLinks(getSortedNavLinks(arrayMove(newNavLinks, draggedLinkIndex, replacedLinktIndex)))
   }
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id === over?.id || navLinks[getNavLinkIndexById(active.id as string)].state === LabelState.CREATE_OR_EDIT) return;
+    if (active.id === over?.id || navLinks[getNavLinkIndexById(active.id as string)]?.state === LabelState.CREATE_OR_EDIT) return;
     updateChierarchyAndParent(active.id as string, over?.id as string)
   }
 
