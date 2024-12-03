@@ -21,15 +21,9 @@ const CreateOrEditLabel: React.FC<Props> = ({
     url,
     id,
 }): JSX.Element => {
-    let additionalStyles = "";
-
-    if (!isOnlyLabel) {
-        additionalStyles = "rounded-[--radius-md] border-[1px] border-[#D0D5DD]";
-    }
-
     const getForm = (): JSX.Element => (
         <form
-            className={`w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px]  bg-white ${additionalStyles}`}
+            className="w-[100%] flex flex-col gap-[8px] text-[#344054] px-[24px] py-[20px]  bg-white rounded-[--radius-md] border-[1px] border-[#D0D5DD]"
             onSubmit={handleSubmit(onSubmit)}
         >
             <div className="w-[100%] flex flex-col gap-[6px]">
