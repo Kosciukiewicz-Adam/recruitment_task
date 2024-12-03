@@ -12,18 +12,28 @@ import { LabelState } from "@/consts";
 export default function Home(): JSX.Element {
   const [navLinks, setNavLinks] = useState<NavLink[]>([]);
   const showAddLinkBar = navLinks.length > 1 || navLinks.length === 1 && navLinks[0].state === LabelState.DISPLAY;
-  const navLinksWithoutParents = navLinks.filter(link => !link?.parentId);
-  const sortedNavLinks: NavLink[] = [];
-
   const getExistingOrPrevValue = (prevValue: string, nextValue?: string): string => !!nextValue && prevValue !== nextValue ? nextValue : prevValue;
-  const getNavLinkIndexById = (id: string): number => sortedNavLinks.findIndex(link => link.id === id);
+  const getNavLinkIndexById = (id: string): number => navLinks.findIndex(link => link.id === id);
+
+  const getSortedNavLinks = (linkArray: NavLink[]): NavLink[] => {
+    const sortedNavLinks: NavLink[] = [];
+
+    const navLinksWithoutParents = linkArray.filter(link => !link?.parentId);
+    const findChildNavLinks = (id: string) => addLinksToArray(linkArray.filter(link => link.parentId === id))
+    const addLinksToArray = (links: NavLink[]) => links.forEach(link => {
+      sortedNavLinks.push(link);
+      findChildNavLinks(link.id)
+    })
+    addLinksToArray(navLinksWithoutParents)
+
+    return sortedNavLinks;
+  }
 
   const handleAddNavLink = (parentId?: string) => {
-    const newNavLinks = structuredClone(navLinks);
-    const parentChierarchyIndex = newNavLinks.find(link => link.id === parentId)?.chierarchyIndex;
+    const parentChierarchyIndex = navLinks.find(link => link.id === parentId)?.chierarchyIndex;
     const linkCherarchyIndex = parentChierarchyIndex !== undefined ? parentChierarchyIndex + 1 : 0;
 
-    const data = {
+    const data: NavLink = {
       chierarchyIndex: linkCherarchyIndex,
       state: LabelState.CREATE_OR_EDIT,
       id: _.uniqueId("link_"),
@@ -35,13 +45,12 @@ export default function Home(): JSX.Element {
       Object.assign(data, { parentId })
     }
 
-    newNavLinks.push(data)
-    setNavLinks(newNavLinks)
+    setNavLinks(getSortedNavLinks([...navLinks, data]))
   }
 
   const handleDeleteNavLink = (id: string) => {
     const newNavLinks = navLinks.filter(link => link.id !== id && link.parentId !== id)
-    setNavLinks(newNavLinks)
+    setNavLinks(getSortedNavLinks(newNavLinks))
   }
 
   const handleEditNavLink = (id: string) => handleUpdateNavLinks({
@@ -60,76 +69,75 @@ export default function Home(): JSX.Element {
       url: getExistingOrPrevValue(newNavLinks[navLinkIndex].url, data?.url)
     }
 
-    setNavLinks(newNavLinks)
+    setNavLinks(getSortedNavLinks(newNavLinks))
   }
 
-  const findChildNavLinks = (id: string) => addLinksToArray(navLinks.filter(link => link.parentId === id))
+  const updateChierarchyAndParent = (activeId: string, overId: string) => {
+    const newNavLinks = structuredClone(navLinks);
+    const replacedLinktIndex = getNavLinkIndexById(overId);
+    const draggedLinkIndex = getNavLinkIndexById(activeId);
 
-  const addLinksToArray = (links: NavLink[]) => links.forEach(link => {
-    sortedNavLinks.push(link);
-    findChildNavLinks(link.id)
-  })
+    if (replacedLinktIndex === -1 || draggedLinkIndex === -1) return;
 
-  addLinksToArray(navLinksWithoutParents)
+    if (newNavLinks[replacedLinktIndex]?.parentId) {
+      newNavLinks[draggedLinkIndex].parentId = newNavLinks[replacedLinktIndex].parentId
+    } else {
+      delete newNavLinks[draggedLinkIndex].parentId
+    }
+
+    newNavLinks.forEach((link, index) => {
+      if (link.parentId === newNavLinks[draggedLinkIndex].id) {
+        newNavLinks[index].parentId = newNavLinks[replacedLinktIndex].parentId;
+        newNavLinks[index].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex;
+      }
+    })
+
+    newNavLinks[draggedLinkIndex].chierarchyIndex = newNavLinks[replacedLinktIndex].chierarchyIndex;
+    setNavLinks(getSortedNavLinks(arrayMove(newNavLinks, draggedLinkIndex, replacedLinktIndex)))
+  }
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id === over?.id || navLinks[getNavLinkIndexById(active.id as string)].state === LabelState.CREATE_OR_EDIT) return;
+    updateChierarchyAndParent(active.id as string, over?.id as string)
+  }
 
   const getBordersConfig = (index: number): BordersConfig => {
     const bordersConfig: BordersConfig = { topLeft: false, bottomLeft: false, topRight: false };
     const isFirstLink = index === 0;
 
-    const nextLink = sortedNavLinks?.[index + 1]
-    const prevLink = sortedNavLinks?.[index - 1]
+    const nextLink = navLinks?.[index + 1]
+    const prevLink = navLinks?.[index - 1]
 
-    const nextLinkUnder = nextLink && sortedNavLinks[index].chierarchyIndex < sortedNavLinks[index + 1].chierarchyIndex;
-    const prevLinkUnder = prevLink && sortedNavLinks[index].chierarchyIndex < sortedNavLinks[index - 1].chierarchyIndex;
-    const nextLinkOver = nextLink && sortedNavLinks[index].chierarchyIndex > sortedNavLinks[index + 1].chierarchyIndex;
+    const nextLinkUnder = nextLink && navLinks[index].chierarchyIndex < navLinks[index + 1].chierarchyIndex;
+    const prevLinkUnder = prevLink && navLinks[index].chierarchyIndex < navLinks[index - 1].chierarchyIndex;
+    const nextLinkOver = nextLink && navLinks[index].chierarchyIndex > navLinks[index + 1].chierarchyIndex;
 
     if (isFirstLink) {
       bordersConfig.topRight = true
     }
 
-    if (isFirstLink || prevLinkUnder && sortedNavLinks[index].chierarchyIndex) {
+    if (isFirstLink || prevLinkUnder && navLinks[index].chierarchyIndex) {
       bordersConfig.topLeft = true
     }
 
-    if (sortedNavLinks[index].chierarchyIndex > 0 && (nextLinkUnder || nextLinkOver && !prevLinkUnder || !nextLink && !prevLinkUnder)) {
+    if (navLinks[index].chierarchyIndex > 0 && (nextLinkUnder || nextLinkOver && !prevLinkUnder || !nextLink && !prevLinkUnder)) {
       bordersConfig.bottomLeft = true
     }
 
     return bordersConfig;
   }
 
-  const updateChierarchyAndParent = (activeId: string, overId: string) => {
-    const replacedLinktIndex = getNavLinkIndexById(overId);
-    const draggedLinkIndex = getNavLinkIndexById(activeId);
-
-    if (replacedLinktIndex === -1 || draggedLinkIndex === -1) return;
-
-    if (sortedNavLinks[replacedLinktIndex]?.parentId) {
-      sortedNavLinks[draggedLinkIndex].parentId = sortedNavLinks[replacedLinktIndex].parentId
-    } else {
-      delete sortedNavLinks[draggedLinkIndex].parentId
-    }
-
-    sortedNavLinks[draggedLinkIndex].chierarchyIndex = sortedNavLinks[replacedLinktIndex].chierarchyIndex
-    setNavLinks(arrayMove(sortedNavLinks, draggedLinkIndex, replacedLinktIndex))
-  }
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active.id === over?.id) return;
-    updateChierarchyAndParent(active.id as string, over?.id as string)
-  }
-
   return (
     <div className="font-[family-name:var(--font-inter)] w-[100%] h-[100%] bg-[#f5f4f4] py-[30px] px-[24px]">
-      {sortedNavLinks.length ? (
+      {navLinks.length ? (
         <>
           <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-            <SortableContext items={sortedNavLinks} strategy={verticalListSortingStrategy}>
+            <SortableContext items={navLinks} strategy={verticalListSortingStrategy}>
               {
-                sortedNavLinks.map((link, index) => (
+                navLinks.map((link, index) => (
                   <NavLinkLabel
-                    isOnlyLabel={sortedNavLinks.length === 1}
+                    isOnlyLabel={navLinks.length === 1}
                     bordersConfig={getBordersConfig(index)}
                     handleUpdate={handleUpdateNavLinks}
                     handleDelete={handleDeleteNavLink}
@@ -143,7 +151,7 @@ export default function Home(): JSX.Element {
               }
             </SortableContext>
           </DndContext>
-          {showAddLinkBar && <AddLinkBar handleAdd={handleAddNavLink} top={`-${sortedNavLinks.length}px`} />}
+          {showAddLinkBar && <AddLinkBar handleAdd={handleAddNavLink} top={`-${navLinks.length}px`} />}
         </>
       ) : (
         <EmptyListLabel
